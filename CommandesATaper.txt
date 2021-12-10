@@ -1,2 +1,2 @@
-- Charger les fichiers : consult("Code.pl"),consult("Exemple.pl")
+- Charger les fichiers : consult("Code.pl").,consult("Exemple.pl").
 - Tester la mise en forme des listes de abox et tbox : premiere_etape(Tbox,Abi,Abr).
