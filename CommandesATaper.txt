@@ -1,2 +1,34 @@
-- Charger les fichiers : consult("Code.pl").,consult("Exemple.pl").
-- Tester la mise en forme des listes de abox et tbox : premiere_etape(Tbox,Abi,Abr).
+- Charger les fichiers : 
+	- consult("Code.pl").
+	- consult("Exemple.pl").
+- Tester la mise en forme des listes de abox et tbox : 
+	- premiere_etape(Tbox,Abi,Abr).
+- Résolution de type 1 I : C :
+	- programme.
+	- 1.
+	
+	# concept atomique
+	- michelAnge. 
+	- personne.
+	# concept non atomique
+	- michelAnge.
+	- sculpteur.
+	# truc
+	!!! Pas fait, sujet moyen prévu pour, en parler dans rapport
+	# not concept
+	- michelAnge.
+	- not(personne).
+	# Ou
+	- michelAnge.
+	- or(sculpteur,auteur).
+	# Et
+	- michelAnge.
+	- and(sculpteur,auteur).
+	# Existe
+	- michelAnge.
+	- some(aCree,sculpture).
+	# QuelQueSoit
+	- michelAnge.
+	- all(aCree,sculpture).
+	
+	
