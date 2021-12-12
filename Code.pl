@@ -12,6 +12,7 @@ programme :-
 tbox(Tbox) :- findall((C,CG),(equiv(C,CG)),Tbox).
 abi(Abi) :- findall((I,C),(inst(I,C)),Abi).
 abr(Abr) :- findall((I,I2,R),(instR(I,I2,R)),Abr).
+recup(X) :- findall((michelAnge,X),instR(michelAnge,X,aCree),X).
 
 premiere_etape(Tbox,Abi,Abr):- tbox(Tbox),!,abi(Abi),!,abr(Abr),!.
 	
@@ -23,7 +24,7 @@ deuxieme_etape(Abi,Abi1,Tbox) :-
 saisie_et_traitement_prop_a_demontrer(Abi,Abi1,Tbox) :-
 	nl,write('Entrez le numero du type de proposition que vous voulez demontrer :'),nl,
 	write('1 Une instance donnee appartient a un concept donne.'),nl,
-	write('2 Deux concepts n"ont pas d"elements en commun(ils ont une intersection vide).'),nl, read(R), suite(R,Abi,Abi1,Tbox),!.
+	write("2 Deux concepts n'ont pas d'elements en commun(ils ont une intersection vide)."),nl, read(R), suite(R,Abi,Abi1,Tbox),!.
 	
 suite(1,Abi,Abi1,Tbox) :-
 	write('Type 1 choisi !'),nl,acquisition_prop_type1(Abi,Abi1,Tbox),!.
@@ -77,20 +78,44 @@ decomplexe(all(R,C),X) :- X = all(R,Y),decomplexe(C,Y).
 decomplexe(not(C),X) :- X = not(Y), decomplexe(C,Y).
 
 %Acquisition type 1
-acquisition_prop_type1(Abi,Abi1,_) :- lecture(L), type_1_ok(L,I,C),decomplexe(C,NewC),!,nnf(not(NewC),NotnewC),concat(Abi,[(I,NotnewC)],Abi1),write("On montre l'insatisfiabilité de "),write(NotnewC). 
+acquisition_prop_type1(Abi,Abi1,_) :- lecture(L), type_1_ok(L,I,C),decomplexe(C,NewC),!,nnf(not(NewC),NotnewC),concat(Abi,[(I,NotnewC)],Abi1),nl,write("On montre l'insatisfiabilité de "),write(NotnewC). 
 
 
 
 % Partie 3
 %====Fourni====
 troisieme_etape(Abi,Abr) :-
-nl,write("Troisième étape"),
+nl,nl,write("Troisième étape"),nl,
 tri_Abox(Abi,Lie,Lpt,Li,Lu,Ls),
+nl,write("Lie"),write(Lie),
+nl,write("Lpt"),write(Lpt),
+nl,write("Li"),write(Li),
+nl,write("Lu"),write(Lu),
+nl,write("Ls"),write(Ls),
 resolution(Lie,Lpt,Li,Lu,Ls,Abr),
-nl,write('Youpiiiiii, on a demontre la proposition initiale !!!').
+nl,write('Youpiiiiii, on a démontré la proposition initiale !!!').
 compteur(1).
+
 %=============
 
+%Tri
+
+tri_Abox([(I,some(R,C))|Q],[(I,some(R,C))|Lie],Lpt,Li,Lu,Ls) :- tri_Abox(Q,Lie,Lpt,Li,Lu,Ls).
+	
+tri_Abox([(I,all(R,C))|Q],Lie,[(I,all(R,C))|Lpt],Li,Lu,Ls) :- tri_Abox(Q,Lie,Lpt,Li,Lu,Ls).
+	
+tri_Abox([(I,and(C1,C2))|Q],Lie,Lpt,[(I,and(C1,C2))|Li],Lu,Ls) :- tri_Abox(Q,Lie,Lpt,Li,Lu,Ls).
+	
+tri_Abox([(I,or(C1,C2))|Q],Lie,Lpt,Li,[(I,or(C1,C2))|Lu],Ls) :- tri_Abox(Q,Lie,Lpt,Li,Lu,Ls).
+	
+tri_Abox([T|Q],Lie,Lpt,Li,Lu,[T|Ls]) :- tri_Abox(Q,Lie,Lpt,Li,Lu,Ls).
+
+tri_Abox([],[],[],[],[],[]).
+
+%Règles de résolution
+
+complete_some(Lie,_,_,_,_,Abr):- 
+complete_some([],_,_,_,_,[]). 
 
 
 % Utilitaires fournis
