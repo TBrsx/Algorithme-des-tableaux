@@ -26,15 +26,29 @@ saisie_et_traitement_prop_a_demontrer(Abi,Abi1,Tbox) :-
 	write('2 Deux concepts n"ont pas d"elements en commun(ils ont une intersection vide).'),nl, read(R), suite(R,Abi,Abi1,Tbox).
 	
 suite(1,Abi,Abi1,Tbox) :-
-	acquisition_prop_type1(Abi,Abi1,Tbox),!.
+	write('Type 1 choisi !'),nl,acquisition_prop_type1(Abi,Abi1,Tbox),!.
 suite(2,Abi,Abi1,Tbox) :-
 	acquisition_prop_type2(Abi,Abi1,Tbox),!.
 suite(_,Abi,Abi1,Tbox) :-
 	nl,write('Cette reponse est incorrecte.'),nl,
 	saisie_et_traitement_prop_a_demontrer(Abi,Abi1,Tbox).
-	
+
+
+% dernier([E],E).
+% dernier([_|L],E) :- dernier(L,E).
+% type_1_ok([X|L]) :- setof(U,iname(U),T), member(X,T), dernier(L,E),concept(E),nl,write("OK"),!.
+
+type_1_ok([I,Y,C],I,C) :- setof(U,iname(U),T), member(I,T), Y = ':', concept(C),!.
+
+convertC(cnamea(C),not(C)).
+convertC(cnamena(C), not(X)) :- equiv(C,X). 
+
+acquisition_prop_type1(Abi,Abi1,Tbox) :- lecture(L), type_1_ok(L,I,C),convertC(C,NewC),concat(Abi1,[nnf(NewC)],Abi1),write('on arrive'),!. 
+
+
 lecture([X|L]):-
 read(X),
+write(X),nl,
 X \= fin, !,
 lecture(L).
 lecture([]).
