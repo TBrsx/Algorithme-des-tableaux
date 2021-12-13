@@ -65,9 +65,6 @@ nnf(all(R,C),all(R,NC)) :- nnf(C,NC),!.
 nnf(X,X).
 %==============
 
-%Vérifie que l'entrée type 1 est correcte
-type_1_ok([I,C],I,C) :- setof(U,iname(U),T), member(I,T), concept(C),!.
-
 %Décomplexifie récursivement les concepts donnés en entrée
 decomplexe(C,X):- equiv(C,X). %Concept complexe
 decomplexe(C,C) :- cnamea(C). %Concept atomique, pas besoin de décomplexer
@@ -77,10 +74,14 @@ decomplexe(some(R,C),X) :- X = some(R,Y),decomplexe(C,Y). %Existe
 decomplexe(all(R,C),X) :- X = all(R,Y),decomplexe(C,Y). %Pour tout
 decomplexe(not(C),X) :- X = not(Y), decomplexe(C,Y). % Non(Concept))
 
-%Acquisition type 1
+%Acquisition + vérification type 1
+type_1_ok([I,C],I,C) :- setof(U,iname(U),T), member(I,T), concept(C),!.
 acquisition_prop_type1(Abi,Abi1,_) :- lecture(L), type_1_ok(L,I,C),decomplexe(C,NewC),!,nnf(not(NewC),NotnewC),concat(Abi,[(I,NotnewC)],Abi1),nl,write("On montre l'insatisfiabilité de "),write(NotnewC). 
 
 
+% Acquisition + vérification type 2
+type_2_ok([C_1,C_2],C_1,C_2) :- concept(C_1) , concept(C_2).
+acquisition_prop_type2(Abi,Abi1,Tbox) :- lecture(L), type_2_ok(L,C1,C2), decomplexe(C1,NewC1), decomplexe(C2, NewC2), genere(R), nnf(some(R,and(NewC1,NewC2)),C), concat(Abi,[C], Abi1), nl, write("On montre l'insatisfiabilité de "),write(C).
 
 % Partie 3
 %====Fourni====
