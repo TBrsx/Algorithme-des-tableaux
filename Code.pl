@@ -17,6 +17,7 @@ abr(Abr) :- findall((I,I2,R),(instR(I,I2,R)),Abr).
 recup(X) :- findall((michelAnge,X),instR(michelAnge,X,aCree),X).
 
 premiere_etape(Tbox,Abi,Abr):- tbox(Tbox),!,abi(Abi),!,abr(Abr),!.
+
 	
 % Partie 2
 %====Fourni====
@@ -31,7 +32,7 @@ saisie_et_traitement_prop_a_demontrer(Abi,Abi1,Tbox) :-
 suite(1,Abi,Abi1,Tbox) :-
 	write('Type 1 choisi !'),nl,acquisition_prop_type1(Abi,Abi1,Tbox),!.
 suite(2,Abi,Abi1,Tbox) :-
-	acquisition_prop_type2(Abi,Abi1,Tbox),!.
+	write('Type 1 choisi !'),nl,acquisition_prop_type2(Abi,Abi1,Tbox),!.
 suite(_,Abi,Abi1,Tbox) :-
 	nl,write('Cette reponse est incorrecte.'),nl,
 	saisie_et_traitement_prop_a_demontrer(Abi,Abi1,Tbox).
@@ -77,9 +78,9 @@ decomplexe(all(R,C),X) :- X = all(R,Y),decomplexe(C,Y). %Pour tout
 decomplexe(not(C),X) :- X = not(Y), decomplexe(C,Y). % Non(Concept))
 
 
-
+%Si on enlève une des deux lignes, ça ne fonctionne plus, prière de laisser les deux lignes (Oui, ça n'a aucun sens).
 lecture(L) :- read_string(user_input,"\n","",_,S), split_string(S," ","",L).
-
+lecture(L) :- read_string(user_input,"\n","",_,S), split_string(S," ","",L).
 
 %Acquisition + vérification type 1
 
@@ -290,7 +291,6 @@ chiffre_car(8,'8').
 chiffre_car(9,'9').
 
 
-lecture(L) :- read_string(user_input,"\n","",_,S), split_string(S," ","",L).
 
 
 lecture2([X|L]):-
