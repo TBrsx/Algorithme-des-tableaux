@@ -89,14 +89,9 @@ troisieme_etape(Abi,Abr) :-
 nl,nl,write("Troisième étape"),nl,nl,
 tri_Abox(Abi,Lie,Lpt,Li,Lu,Ls),
 write("====Abox initiale===="),nl,
-write("ls"),nl,afficher_Abox(Ls),
-write("lie"),nl,afficher_Abox(Lie),
-write("lpt"),nl,afficher_Abox(Lpt),
-write("lu"),nl,afficher_Abox(Lu),
-write("li"),nl,afficher_Abox(Li),
-write("abr"),nl,afficher_Abox(Abr),
+afficher_Abox(Abi),afficher_Abox(Abr),
 resolution(Lie,Lpt,Li,Lu,Ls,Abr),
-nl,write("Youpiiiiii, on a démontré la proposition initiale !!! (Sauf si on vient d'échouer)").
+nl,write("Youpiiiiii, on a démontré la proposition initiale !!!").
 
 %=============
 
@@ -127,12 +122,17 @@ complete_some([(I,some(R,C))|Q],Lpt,Li,Lu,Ls,Abr):-
 	evolue((I,some(R,C)),[(I,some(R,C))|Q],Lpt,Li,Lu,Ls,Lie1, Lpt1, Li1, Lu1, Ls1,Abr,Abr1),!. %Si on trouve une règle existe
 complete_some([],Lpt,Li,Lu,Ls,Abr) :- transformation_and([],Lpt,Li,Lu,Ls,Abr),!. %Si on n'en trouve pas
 
-transformation_and([],Lpt,[(I,and(C1,C2))|Q],Lu,Ls,Abr):- 
+transformation_and(Lie,Lpt,[(I,and(C1,C2))|Q],Lu,Ls,Abr):- 
 	evolue((I,and(C1,C2)),[],Lpt,[(I,and(C1,C2))|Q],Lu,Ls,Lie1, Lpt1, Li1, Lu1, Ls1,Abr,Abr1),!. %Si on trouve une règle "et"
-transformation_and([],Lpt,[],Lu,Ls,Abr) :- transformation_or([],Lpt,[],Lu,Ls,Abr),!. %Si on n'en trouve pas
+transformation_and(Lie,Lpt,[],Lu,Ls,Abr) :- deduction_all(Lie,Lpt,[],Lu,Ls,Abr),!. %Si on n'en trouve pas
 
-transformation_or([],Lpt,[],[(I,or(C1,C2))|Q],Ls,Abr) :- evolue((I,or(C1,C2)),Lie,Lpt,Li,[(I,or(C1,C2))|Q],Ls,Lie1,Lpt1,Li1,Lu1,Ls1,Abr,Abr1),!. %Si on trouve une règle "ou"
-transformation_or([],[],[],[],Ls,_) :- clash([],Lpt,[],Lu,Ls,Abr),!. %Si on n'en trouve pas
+deduction_all(Lie,[(I,all(R,C))|Q],Li,Lu,Ls,Abr):- 
+	evolue((I,all(R,C)),Lie,[(I,all(R,C))|Q],Li,Lu,Ls,Lie1,Lpt1,Lu1,Abr,Abr1),!.%Si on trouve une règle "Pour tout"
+deduction_all(Lie,[],Li,Lu,Ls,Abr):- transformation_or(Lie,[],Li,Lu,Ls,Abr),!. %Si on n'en trouve pas
+
+transformation_or(Lie,Lpt,Li,[(I,or(C1,C2))|Q],Ls,Abr) :- 
+	evolue((I,or(C1,C2)),Lie,Lpt,Li,[(I,or(C1,C2))|Q],Ls,Lie1,Lpt1,Li1,Lu1,Ls1,Abr,Abr1),!. %Si on trouve une règle "ou"
+transformation_or(_,_,_,[],Ls,Abr) :- clash([],[],[],[],Ls,Abr),!. %Si on n'en trouve pas
 
 %Clash
 
@@ -142,7 +142,7 @@ clash(_,_,_,_,Ls,_) :-
 	write("Il y a un clash, on stoppe ce noeud.").
 clash([],[],[],[],_,_) :-
 	nl,
-	write("Il n'y a pas de clash, et de plus on ne peut plus appliquer de règles. La branche est complète, on ne peut vérifier la proposition initiale...").
+	write("Il n'y a pas de clash, et de plus on ne peut plus appliquer de règles. La branche est complète, on ne peut donc vérifier la proposition initiale."),sleep(1),nl,abort.
 clash(Lie,Lpt,Li,Lu,Ls,Abr) :-
 	nl,
 	write("Il n'y a pas de clash, on continue la résolution de ce noeud"),
@@ -167,48 +167,66 @@ evolue((I,some(R,C)), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1,Abr,Abr1) 
 	tri_Abox(Abi1E,Lie1,Lpt1,Li1,Lu1,Ls1),!,%On retrie Abi
 	nl,nl,write("Règle ∃"), %Afficher la règle utilisée
 	affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr1),
-	clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1).%Clash ?
+	clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1),!.%Clash ?
 	
 
 evolue((I,and(C1,C2)), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1,Abr,Abr1) :-
+	concat([],Abr,Abr1),%Copie de Abr, car il n'est pas modifié
 	reconstruire_Abox(Abi,[Lie,Lpt,Li,Lu,Ls]), %On reconstruit Abi
 	concat([(I,C1),(I,C2)],Abi,Abi1), %Ajout des deux rôles
 	enleve((I,and(C1,C2)),Abi1,Abi1E),%On enlève la règle que l'on a traitée
 	tri_Abox(Abi1E,Lie1,Lpt1,Li1,Lu1,Ls1),!,%On retrie Abi
 	nl,nl,write("Règle ⊓"), %Afficher la règle utilisée
 	affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr1),
-	clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1).%Clash ?
+	clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1),!.%Clash ?
 	
 evolue((I,or(C1,C2)), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1,Abr,Abr1) :-
+	concat([],Abr,Abr1),%Copie de Abr, car il n'est pas modifié
 	reconstruire_Abox(Abi,[Lie,Lpt,Li,Lu,Ls]), %On reconstruit Abi
-	concat([(I,C1)],Abi,Abi1),%On y ajoute l'instance avec C1
-	enleve((I,or(C1,C2)),Abi1,Abi1E),!,%On enlève la règle que l'on a traitée
-	tri_Abox(Abi1E,Lie1,Lpt1,Li1,Lu1,Ls1),!,%On retrie Abi
-	%On enlève la règle que l'on a traitée
+	enleve((I,or(C1,C2)),Abi,AbiE),!,%On enlève la règle que l'on a traitée
+	concat([(I,C1)],AbiE,Abi1),%On ajoute l'instance C1
+	tri_Abox(Abi1,Lie1,Lpt1,Li1,Lu1,Ls1),!,%On retrie Abi
 	nl,nl,write("Règle ⊔ - Branche 1"), %Afficher la règle utilisée
 	affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr1),
-	clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1),%Clash ?
+	clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1),!,%Clash ?
 	
-	reconstruire_Abox(Abi1,[Lie1,Lpt1,Li1,Lu1,Ls1]), %On reconstruit Abi
-	enleve([(I,C1)],Abi1,Abi1),!, %Enlever C1
-	concat([(I,C2)],Abi1,Abi2), %Ajouter C2
-	tri_Abox(Abi2,Lie2,Lpt2,Li2,Lu2,Ls2),!,%On retrie Abi
+	concat([],Abr,Abr2),%Copie de Abr, car il n'est pas modifié
+	reconstruire_Abox(Abi2,[Lie1,Lpt1,Li1,Lu1,Ls1]), %On reconstruit Abi
+	enleve((I,C1),Abi2,Abi2E),!,%On enlève l'instance traitée
+	concat([(I,C2)],Abi2E,Abi3),%On ajoute l'instance C2
+	tri_Abox(Abi3,Lie2,Lpt2,Li2,Lu2,Ls2),!,%On retrie Abi
 	nl,nl,write("Règle ⊔ - Branche 2"), %Afficher la règle utilisée
 	affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls2, Lie2, Lpt2, Li2, Lu2, Abr2),
-	clash(Lie2,Lpt2,Li2,Lu2,Ls2,Abr2).%Clash ?
+	clash(Lie2,Lpt2,Li2,Lu2,Ls2,Abr1),!.%Clash ?
+	
+deductions(_,_,_,[],L).
+deductions(A,R,C,[(A,B,R)|Abr],[(B,C)|L]):- deductions(A,R,C,Abr,L).
+deductions(A,R,C,[(T,_,U)|Abr],L):- deductions(A,R,C,Abr,L).
+
+evolue((I,all(R,C)),Lie,[(I,all(R,C))|Q],Li,Lu,Ls,Lie1,Lpt1,Lu1,Abr,Abr1) :-
+	concat([],Abr,Abr1),%Copie de Abr, car il n'est pas modifié
+	reconstruire_Abox(Abi,[Lie,Lpt,Li,Lu,Ls]), %On reconstruit Abi
+	deductions(I,R,C,Abr,L), %On calcule toutes les déductions possibles
+	concat(L,Abi,Abi1), %On ajoute, si il y en a, la ou les instances déduites
+	enleve((I,all(R,C)),Abi1,Abi1E), %On enlève la règle
+	tri_Abox(Abi1E,Lie1,Lpt1,Li1,Lu1,Ls1),!,%On retrie Abi
+	nl,nl,write("Règle ∀"), %Afficher la règle utilisée
+	affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr1),
+	clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1),!.%Clash ?
 
 % Affichage
 affiche_evolution_Abox(Ls1, Lie1, Lpt1, Li1, Lu1, Abr1, Ls2, Lie2, Lpt2, Li2, Lu2, Abr2) :-
-nl,write("============ Abi avant règle ============"),nl,
+nl,write("============ Abe avant règle ============"),nl,
 reconstruire_Abox(Abi1,[Lie1,Lpt1,Li1,Lu1,Ls1]),
 afficher_Abox(Abi1),
-nl,write("============ Abi après règle ============"),nl,
+afficher_Abox(Abr1),
+nl,write("============ Abe après règle ============"),nl,
 reconstruire_Abox(Abi2,[Lie2,Lpt2,Li2,Lu2,Ls2]),
-afficher_Abox(Abi2).
+afficher_Abox(Abi2),
+afficher_Abox(Abr2).
 
-
-afficher_Abox_int((I,C)) :-write(I),write(":"),afficher_Abox_concept(C).
 afficher_Abox_int((A,B,R)) :- write("<"),write(A),write(","),write(B),write(">"),write(": "),write(R).
+afficher_Abox_int((I,C)) :-write(I),write(":"),afficher_Abox_concept(C).
 afficher_Abox_concept(or(C1,C2)):-write("("),afficher_Abox_concept(C1),write("⊔ "),afficher_Abox_concept(C2),write(")").
 afficher_Abox_concept(and(C1,C2)):-write("("),afficher_Abox_concept(C1),write("⊓ "),afficher_Abox_concept(C2),write(")").
 afficher_Abox_concept(some(R,C)):-write(R),write("."),write(C).
