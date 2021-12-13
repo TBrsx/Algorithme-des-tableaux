@@ -1,5 +1,7 @@
 %!! Penser à charger ABox et Tbox
 
+%T.BERSOUX, F.SABATINO, 2021, Master Androide
+
 %Démarrage du programme
 programme :-
 	premiere_etape(Tbox,Abi,Abr),
@@ -12,7 +14,6 @@ programme :-
 tbox(Tbox) :- findall((C,CG),(equiv(C,CG)),Tbox).
 abi(Abi) :- findall((I,C),(inst(I,C)),Abi).
 abr(Abr) :- findall((I,I2,R),(instR(I,I2,R)),Abr).
-recup(X) :- findall((michelAnge,X),instR(michelAnge,X,aCree),X).
 
 premiere_etape(Tbox,Abi,Abr):- tbox(Tbox),!,abi(Abi),!,abr(Abr),!.
 	
@@ -134,26 +135,6 @@ transformation_or(Lie,Lpt,Li,[(I,or(C1,C2))|Q],Ls,Abr) :-
 	evolue((I,or(C1,C2)),Lie,Lpt,Li,[(I,or(C1,C2))|Q],Ls,Lie1,Lpt1,Li1,Lu1,Ls1,Abr,Abr1),!. %Si on trouve une règle "ou"
 transformation_or(_,_,_,[],Ls,Abr) :- clash([],[],[],[],Ls,Abr),!. %Si on n'en trouve pas
 
-%Clash
-
-clash(_,_,_,_,Ls,_) :-
-	query_clash(Ls),
-	nl,
-	write("Il y a un clash, on stoppe ce noeud.").
-clash([],[],[],[],_,_) :-
-	nl,
-	write("Il n'y a pas de clash, et de plus on ne peut plus appliquer de règles. La branche est complète, on ne peut donc vérifier la proposition initiale."),sleep(1),nl,abort.
-clash(Lie,Lpt,Li,Lu,Ls,Abr) :-
-	nl,
-	write("Il n'y a pas de clash, on continue la résolution de ce noeud"),
-	resolution(Lie,Lpt,Li,Lu,Ls,Abr).
-
-query_clash([T|Q]) :- test_clash(T,Q),!.
-query_clash([_|Q]) :- query_clash(Q).
-test_clash((I,C),Q) :- member((I,not(C)),Q).
-test_clash((I,not(C)),Q) :- member((I,C),Q).
-
-
 
 %Évolution
 
@@ -173,7 +154,7 @@ evolue((I,some(R,C)), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1,Abr,Abr1) 
 evolue((I,and(C1,C2)), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1,Abr,Abr1) :-
 	concat([],Abr,Abr1),%Copie de Abr, car il n'est pas modifié
 	reconstruire_Abox(Abi,[Lie,Lpt,Li,Lu,Ls]), %On reconstruit Abi
-	concat([(I,C1),(I,C2)],Abi,Abi1), %Ajout des deux rôles
+	concat([(I,C1),(I,C2)],Abi,Abi1), %Ajout des deux instances de concepts
 	enleve((I,and(C1,C2)),Abi1,Abi1E),%On enlève la règle que l'on a traitée
 	tri_Abox(Abi1E,Lie1,Lpt1,Li1,Lu1,Ls1),!,%On retrie Abi
 	nl,nl,write("Règle ⊓"), %Afficher la règle utilisée
@@ -213,6 +194,27 @@ evolue((I,all(R,C)),Lie,Lpt,Li,Lu,Ls,Lie1,Lpt1,Lu1,Abr,Abr1) :-
 	nl,nl,write("Règle ∀"), %Afficher la règle utilisée
 	affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr1),
 	clash(Lie1,Lpt1,Li1,Lu1,Ls1,Abr1),!.%Clash ?
+	
+%Clash
+
+clash(_,_,_,_,Ls,_) :-
+	query_clash(Ls),
+	nl,
+	write("Il y a un clash, on stoppe ce noeud.").
+clash([],[],[],[],_,_) :-
+	nl,
+	write("Il n'y a pas de clash, et de plus on ne peut plus appliquer de règles. La branche est complète, on ne peut donc vérifier la proposition initiale."),nl,sleep(1),abort.
+clash(Lie,Lpt,Li,Lu,Ls,Abr) :-
+	nl,
+	write("Il n'y a pas de clash, on continue la résolution de ce noeud"),
+	resolution(Lie,Lpt,Li,Lu,Ls,Abr).
+	
+
+query_clash([T|Q]) :- test_clash(T,Q),!.
+query_clash([_|Q]) :- query_clash(Q).
+test_clash((I,C),Q) :- member((I,not(C)),Q).
+test_clash((I,not(C)),Q) :- member((I,C),Q).
+
 
 % Affichage
 affiche_evolution_Abox(Ls1, Lie1, Lpt1, Li1, Lu1, Abr1, Ls2, Lie2, Lpt2, Li2, Lu2, Abr2) :-
