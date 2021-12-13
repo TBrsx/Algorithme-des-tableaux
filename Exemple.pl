@@ -24,6 +24,7 @@ rname(aEdite).
 rname(aEnfant).
 
 inst(michelAnge,personne).
+inst(michelAnge,not(parent)).
 inst(david,sculpture).
 inst(sonnets,livre).
 inst(vinci,personne).
