@@ -81,7 +81,7 @@ acquisition_prop_type1(Abi,Abi1,_) :- lecture(L), type_1_ok(L,I,C),decomplexe(C,
 
 % Acquisition + vérification type 2
 type_2_ok([C1,C2],C1,C2) :- concept(C1) , concept(C2).
-acquisition_prop_type2(Abi,Abi1,_) :- lecture(L), type_2_ok(L,C1,C2), decomplexe(C1,NewC1),!, decomplexe(C2, NewC2),!, genere(Nom), nnf(C1,NnfC1),nnf(C2,NnfC2), concat(Abi,[(Nom,and(NnfC1,NnfC2))], Abi1), nl, write("On montre l'insatisfiabilité de "),write("∃"),write(Nom),write(":"),write((Nom,and(NnfC1,NnfC2))).
+acquisition_prop_type2(Abi,Abi1,_) :- lecture(L), type_2_ok(L,C1,C2), decomplexe(C1,NewC1),!, decomplexe(C2, NewC2),!, genere(Nom), nnf(NewC1,NnfC1),nnf(NewC2,NnfC2), concat(Abi,[(Nom,and(NnfC1,NnfC2))], Abi1), nl, write("On montre l'insatisfiabilité de "),write("∃"),write(Nom),write(":"),write((Nom,and(NnfC1,NnfC2))).
 
 % Partie 3
 %====Fourni====
@@ -89,9 +89,9 @@ troisieme_etape(Abi,Abr) :-
 nl,nl,write("Troisième étape"),nl,nl,
 tri_Abox(Abi,Lie,Lpt,Li,Lu,Ls),
 write("====Abox initiale===="),nl,
-afficher_Abox(Abi),afficher_Abox(Abr),
-resolution(Lie,Lpt,Li,Lu,Ls,Abr),
-nl,write("Youpiiiiii, on a démontré la proposition initiale !!!").
+afficher_Abox(Abi),afficher_Abox(Abr),!,
+resolution(Lie,Lpt,Li,Lu,Ls,Abr),!,
+nl,write("La négation de la clause est insatisfiable, on a donc démontré la proposition initiale.").
 
 %=============
 
@@ -119,7 +119,7 @@ resolution(Lie,Lpt,Li,Lu,Ls,Abr) :- complete_some(Lie,Lpt,Li,Lu,Ls,Abr),!.
 %Règles de résolution
 
 complete_some([(I,some(R,C))|Q],Lpt,Li,Lu,Ls,Abr):- 
-	evolue((I,some(R,C)),[(I,some(R,C))|Q],Lpt,Li,Lu,Ls,Lie1, Lpt1, Li1, Lu1, Ls1,Abr,Abr1),!. %Si on trouve une règle existe
+	evolue((I,some(R,C)),[(I,some(R,C))|Q],Lpt,Li,Lu,Ls,Lie1,Lpt1, Li1, Lu1, Ls1,Abr,Abr1),!. %Si on trouve une règle existe
 complete_some([],Lpt,Li,Lu,Ls,Abr) :- transformation_and([],Lpt,Li,Lu,Ls,Abr),!. %Si on n'en trouve pas
 
 transformation_and(Lie,Lpt,[(I,and(C1,C2))|Q],Lu,Ls,Abr):- 
@@ -161,8 +161,8 @@ reconstruire_Abox(Abi,L) :- flatten(L,Abi).
 
 evolue((I,some(R,C)), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1,Abr,Abr1) :-
 	reconstruire_Abox(Abi,[Lie,Lpt,Li,Lu,Ls]), %On reconstruit Abi
+	genere(Nom),!,concat([(I,Nom,R)],Abr,Abr1),%Ajout du rôle
 	concat([(Nom,C)],Abi,Abi1),%On y ajoute l'instance
-	genere(Nom),!,concat([(I,Nom,R)],Abi1,Abi1),%Ajout du rôle
 	enleve((I,some(R,C)),Abi1,Abi1E),!,%On enlève la règle que l'on a traitée
 	tri_Abox(Abi1E,Lie1,Lpt1,Li1,Lu1,Ls1),!,%On retrie Abi
 	nl,nl,write("Règle ∃"), %Afficher la règle utilisée
@@ -199,11 +199,11 @@ evolue((I,or(C1,C2)), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1,Abr,Abr1) 
 	affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls2, Lie2, Lpt2, Li2, Lu2, Abr2),
 	clash(Lie2,Lpt2,Li2,Lu2,Ls2,Abr1),!.%Clash ?
 	
-deductions(_,_,_,[],L).
+deductions(_,_,_,[],_).
 deductions(A,R,C,[(A,B,R)|Abr],[(B,C)|L]):- deductions(A,R,C,Abr,L).
-deductions(A,R,C,[(T,_,U)|Abr],L):- deductions(A,R,C,Abr,L).
+deductions(A,R,C,[(_,_,_)|Abr],L):- deductions(A,R,C,Abr,L).
 
-evolue((I,all(R,C)),Lie,[(I,all(R,C))|Q],Li,Lu,Ls,Lie1,Lpt1,Lu1,Abr,Abr1) :-
+evolue((I,all(R,C)),Lie,Lpt,Li,Lu,Ls,Lie1,Lpt1,Lu1,Abr,Abr1) :-
 	concat([],Abr,Abr1),%Copie de Abr, car il n'est pas modifié
 	reconstruire_Abox(Abi,[Lie,Lpt,Li,Lu,Ls]), %On reconstruit Abi
 	deductions(I,R,C,Abr,L), %On calcule toutes les déductions possibles

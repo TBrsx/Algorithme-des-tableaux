@@ -23,12 +23,23 @@
 	- or(sculpteur,auteur).
 	# Et
 	- michelAnge.
-	- and(sculpteur,auteur).
+	- and(sculpteur,parent).
 	# Existe
 	- michelAnge.
 	- some(aCree,sculpture).
 	# QuelQueSoit
 	- michelAnge.
 	- all(aCree,sculpture).
+	
+- Résolution de type 2 : C1 et C2 disjoints :
+	- programme.
+	- 2.
+	- editeur.
+	- auteur.
+	
+	- programme.
+	- 2.
+	- personne.
+	- not(personne)
 	
 	
