@@ -131,6 +131,7 @@ evolue((I,some(R,C)), Lie, Lpt, Li, Lu, Ls, Lie1, Lpt1, Li1, Lu1, Ls1,Abr,Abr1) 
 	genere(Nom),!,concat([(I,Nom,R)],Abr,Abr1),%Ajout du rôle
 	enleve((I,some(R,C)),Lie1,Lie1), %Supprime la règle itérée
 	concat([(Nom,C)],Ls,Ls1),%Ajout de l'instance
+	nl,write("Règle ∃"),nl, %Afficher la règle utilisée
 	affiche_evolution_Abox(Ls, Lie, Lpt, Li, Lu, Abr, Ls1, Lie1, Lpt1, Li1, Lu1, Abr1).
 	%Clash ?
 
@@ -149,19 +150,34 @@ affiche_evolution_Abox(Ls1, Lie1, Lpt1, Li1, Lu1, Abr1, Ls2, Lie2, Lpt2, Li2, Lu
 nl,write("============ Abi avant règle ============"),nl,
 ecrire_ls(Ls1),
 ecrire_lie(Lie1),
-ecrire_lu(Lu1),
 ecrire_lpt(Lpt1),
+ecrire_lu(Lu1),
 ecrire_li(Li1),
 ecrire_abr(Abr1),
 nl,write("============ Abi après règle ============"),nl,
-
+ecrire_ls(Ls2),
+ecrire_lie(Lie2),
+erire_lpt(Lpt2),
+ecrire_lu(Lu2),
+ecrire_li(Li2),
 ecrire_abr(Abr2).
 
+ecrire_instance(I) :- write(I),write(":").
+ecrire_concept(not(C)):- write("¬"),write(C).
+ecrire_concept(C):-write(C).
 
-ecrire_ls([(I,C)]) : write(I),write(":"),write(C),nl,ecrire_ls(Q).
+ecrire_ls([(I,C)|Q]) :- ecrire_instance(I),ecrire_concept(C),nl,ecrire_ls(Q).
 ecrire_ls([]).
-ecrire_ls([(I,not(C))]) : write(I),write(":"),write(C),nl,ecrire_ls(Q).
-ecrire_ls([]).
+
+ecrire_lu([or(C1,C2)|Q]) :- ecrire_concept(C1),write("⊔"),ecrire_concept(C2),nl,ecrire_lu(Q).
+ecrire_lu([]).
+
+ecrire_lie([(I,some(R,C))|Q]) :- ecrire_instance(I),write("∃"),write(R),write("."),ecrire_concept(C),nl,ecrire_lie(Q).
+ecrire_lpt(([(I,all(R,C))|Q])). :- ecrire_instance(I),write("∀"),write(R),ecrire_concept(C),nl,ecrire_lpt(Q).
+ecrire_lpt([]).
+
+ecrire_li([and(C1,C2)|Q]) :- ecrire_concept(C1),write("⊓"),ecrire_concept(C2),nl,ecrire_li(Q).
+ecrire_li([]).
 
 
 ecrire_abr([(A,B,R)|Q]) :- write("<"),write(A),write(","),write(B),write(">"),write(":"),write(R),nl,ecrire_abr(Q).
